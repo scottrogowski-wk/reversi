@@ -11,6 +11,7 @@ import sys
 import termios
 import tty
 
+# from lib import app_intelligence
 
 class FG:
     red = '\033[31m'
@@ -33,8 +34,8 @@ RESET_COLOR = '\033[0m'
 
 B = "🔵"
 R = "🔴"
-E = " "
-S = FG.red + " "
+E = "  "
+S = FG.red + "  "
 
 ROWS, COLUMNS = map(int, subprocess.check_output(['stty', 'size']).split())
 
@@ -55,15 +56,15 @@ BANNER = """\
  |_|  \_\___| \_/ \___|_|  |___/_|
  """
 
-# import logging
-# import sys
-
-# logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 from cStringIO import StringIO
 # sys_stdout = sys.stdout
 log_capture_string = StringIO()
 # sys.stdout = log_capture_string
+
+rootLogger = logging.getLogger()
+rootLogger.addHandler(logging.StreamHandler(log_capture_string))
+rootLogger.setLevel(logging.INFO)
 
 
 class SpotNotEmpty(Exception):
@@ -147,14 +148,17 @@ class State(object):
     ]
 
     def __init__(self, player_1=R):
+        if ROWS < 35:
+            raise AssertionError("Make your terminal full screen")
+
+
         self.board = [[E for _ in range(8)] for _ in range(8)]
         self.turn_num = 0
         self.cur_player = player_1
         self.cursor = Cursor()
 
         # setup_logging()
-        logging.info(u"HELLO")
-        # print("hi there")
+        logging.critical(u"HELLO")
 
         # setup middle
         self._set(3, 3, R)
@@ -187,7 +191,7 @@ class State(object):
                     bg = BG.n4
                 else:
                     bg = BG.n6
-                ret += "%s %s  %s" % (bg, cell, RESET_COLOR)
+                ret += "%s %s %s" % (bg, cell, RESET_COLOR)
             ret += "\n"
         return ret
 
@@ -286,7 +290,8 @@ class State(object):
 
 def get_logging_box():
     last_5 = log_capture_string.getvalue().strip().split('\n')[-5:]
-    exit()
+    with open("debug.txt", "a") as f:
+        f.write(str(last_5))
     line_len = COLUMNS - 4
     display = " %s \n" % (line_len * "-")
     display += "\n".join(' | %s | ' % ln for ln in last_5)
