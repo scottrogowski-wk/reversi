@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# pylint: disable=W0511,W0612,W0611,R0902,C0301
 
 import uuid
 from game_backend import (State, handle_human_turn, handle_computer_turn,
