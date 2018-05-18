@@ -3,22 +3,14 @@
 from __future__ import absolute_import, print_function
 
 import copy
-import io
-import logging
 import os
 import subprocess
 import sys
 import termios
 import tty
 
-# from lib import app_intelligence
-
-class FG:
-    red = '\033[31m'
-    black = '\033[30m'
-    white = '\033[97m'
-
-class BG:
+class COLORS:
+    reset = '\033[0m'
     black = '\033[40m'
     red = '\033[41m'
     green = '\033[42m'
@@ -29,13 +21,12 @@ class BG:
     lightgrey = '\033[47m'
     n4 = '\033[104m'
     n6 = '\033[44m'
-
-RESET_COLOR = '\033[0m'
+    clear = '\033[97m'
 
 B = "🔵"
 R = "🔴"
 E = "  "
-S = FG.red + "  "
+S = COLORS.red + "  "
 
 ROWS, COLUMNS = map(int, subprocess.check_output(['stty', 'size']).split())
 
@@ -57,21 +48,12 @@ BANNER = """\
  """
 
 
-from cStringIO import StringIO
-# sys_stdout = sys.stdout
-log_capture_string = StringIO()
-# sys.stdout = log_capture_string
-
-rootLogger = logging.getLogger()
-rootLogger.addHandler(logging.StreamHandler(log_capture_string))
-rootLogger.setLevel(logging.INFO)
-
-
 class SpotNotEmpty(Exception):
     """
     When the player tries to click on a spot that's taken
     """
     pass
+
 
 class GameOver(Exception):
     pass
@@ -89,15 +71,6 @@ def getch():
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
     return char
-
-
-# def setup_logging():
-#     # logger = logging.getLogger('logger')
-#     # logger.setLevel(logging.DEBUG)
-#     # ch = logging.StreamHandler(log_capture_string)
-#     # ch.setLevel(logging.DEBUG)
-#     # logger.addHandler(ch)
-#     sys.stdout = log_capture_string
 
 
 class Cursor(object):
@@ -131,9 +104,6 @@ class Cursor(object):
         if self.x > 0:
             self.x -= 1
 
-# class Board(object):
-#     def __init__(self):
-#         self._board =
 
 class State(object):
     """
@@ -144,21 +114,20 @@ class State(object):
         "board",
         "turn_num",
         "cur_player",
-        "cursor"
+        "cursor",
+        "game_hash"
     ]
 
-    def __init__(self, player_1=R):
+    def __init__(self, game_hash):
         if ROWS < 35:
             raise AssertionError("Make your terminal full screen")
 
 
         self.board = [[E for _ in range(8)] for _ in range(8)]
         self.turn_num = 0
-        self.cur_player = player_1
+        self.cur_player = R
         self.cursor = Cursor()
-
-        # setup_logging()
-        logging.critical(u"HELLO")
+        self.game_hash = game_hash
 
         # setup middle
         self._set(3, 3, R)
@@ -182,16 +151,16 @@ class State(object):
             ret += " " * 5
             for i, cell in enumerate(row):
                 if self.cursor.equals(i, j) and self.is_valid_placement(i, j):
-                    bg = BG.purple
+                    bg = COLORS.lightgrey
                     cell = self.cur_player
                 elif self.cursor.equals(i, j):
-                    bg = BG.red
+                    bg = COLORS.red
                     cell = S
                 elif (i+j) % 2:
-                    bg = BG.n4
+                    bg = COLORS.n4
                 else:
-                    bg = BG.n6
-                ret += "%s %s %s" % (bg, cell, RESET_COLOR)
+                    bg = COLORS.green
+                ret += "%s %s %s" % (bg, cell, COLORS.reset)
             ret += "\n"
         return ret
 
@@ -288,43 +257,33 @@ class State(object):
         self.board[y][x] = color
 
 
-def get_logging_box():
-    last_5 = log_capture_string.getvalue().strip().split('\n')[-5:]
-    with open("debug.txt", "a") as f:
-        f.write(str(last_5))
-    line_len = COLUMNS - 4
-    display = " %s \n" % (line_len * "-")
-    display += "\n".join(' | %s | ' % ln for ln in last_5)
-    display += "\n %s \n" % (line_len * "-")
-    return str(display)
-
-
 def draw(state):
     """
-    Single function to clear the screen and draw everything
+    Clear the screen and draw everything
     :param State state:
     """
     os.system('clear')
     display = BANNER
-    display += "\n\n       "
+    display += "\n\n     "
     display += "Your turn" if state.cur_player == R else "Computer thinking..."
     display += "\n"
     display += state.board_display()
     display += "\n"
     display += "     Move with ←a w↑ s↓ d→ \n"
-    display += "     Select with spacebar \n"
-    display += "     https://www.google.com \n"
-    display += get_logging_box()
+    display += "     Select with spacebar \n\n"
+    display += "     game_hash: {} \n".format(state.game_hash)
+
     display += "\n\n"
     display += " This will teach you how to use App Intelligence.\n"
-    display += " See the README for more info"
-    display += '\n' * (ROWS - len(display.split('\n')) - 5)
-    # sys.stdout = sys_stdout
+    display += " See the README.md for more info"
     print(display)
-    # sys.stdout = log_capture_string
-
 
 def handle_game_over(state):
+    """
+    Triggered by a GameOverExceptions ount up the tiles
+    TODO
+    :param State state:
+    """
     r_count = 0
     b_count = 0
     for y in range(8):
@@ -350,7 +309,7 @@ def handle_human_turn(state):
     In a loop, handle cursor movement. If the human hits enter or space,
     try placing a tile and return stats if successful
     :param State state:
-    :rtype: int, int, int, int
+    :rtype: int turn_num, int x, int y, int swap_count
     """
     while True:
         draw(state)
@@ -372,6 +331,16 @@ def handle_human_turn(state):
                 continue
 
 def min_step(state, depth_remaining):
+    """
+    Computer AI: minimax algorithm
+    Given the current state, find the opponents best possible move by checking how many
+    tiles that move would flip and how many tiles the you would flip in your
+    best move.
+    TODO: don't we need to -1 the number of swaps?
+    :param State state:
+    :param int depth_remaining:
+    :rtype: (int aggregate_flips, int x, int y) for the most aggregate flips
+    """
     depth_remaining -= 1
     possible_moves = []
     for i, j in state.all_valid_placements():
@@ -386,6 +355,15 @@ def min_step(state, depth_remaining):
 
 
 def max_step(state, depth_remaining):
+    """
+    Computer AI: minimax algorithm
+    Given the current state, find the best possible move by checking how many
+    tiles that move would flip and how many tiles the opponent would flip in their
+    best move.
+    :param State state:
+    :param int depth_remaining:
+    :rtype: (int aggregate_flips, int x, int y) for the most aggregate flips
+    """
     depth_remaining -= 1
     possible_moves = []
     for i, j in state.all_valid_placements():

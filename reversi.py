@@ -11,8 +11,8 @@ from app_intelligence import analytics
 # TODO put your AppIntelligence ReversiGameTurn class here
 
 def play():
-    state = State()
     game_hash = uuid.uuid4().hex
+    state = State(game_hash)
     try:
         while True:
             turn_num, x, y, swap_count = handle_human_turn(state)
