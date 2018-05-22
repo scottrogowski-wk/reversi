@@ -9,18 +9,13 @@ import sys
 import termios
 import tty
 
-class COLORS:
+
+class COLORS(object):
     reset = '\033[0m'
-    black = '\033[40m'
     red = '\033[41m'
     green = '\033[42m'
-    orange = '\033[43m'
-    blue = '\033[44m'
-    purple = '\033[45m'
-    cyan = '\033[46m'
     lightgrey = '\033[47m'
-    n4 = '\033[104m'
-    n6 = '\033[44m'
+    purple = '\033[104m'
     clear = '\033[97m'
 
 B = "🔵"
@@ -52,10 +47,6 @@ class SpotNotEmpty(Exception):
     """
     When the player tries to click on a spot that's taken
     """
-    pass
-
-
-class GameOver(Exception):
     pass
 
 
@@ -119,6 +110,9 @@ class State(object):
     ]
 
     def __init__(self, game_hash):
+        """
+        :param str game_hash: a unique hash generated in reversi.py for the game
+        """
         if ROWS < 35:
             raise AssertionError("Make your terminal full screen")
 
@@ -137,6 +131,9 @@ class State(object):
 
     @property
     def other_player(self):
+        """
+        Opposite of current player
+        """
         if self.cur_player == B:
             return R
         return B
@@ -153,11 +150,13 @@ class State(object):
                 if self.cursor.equals(i, j) and self.is_valid_placement(i, j):
                     bg = COLORS.lightgrey
                     cell = self.cur_player
+                elif self.is_valid_placement(i, j):
+                    bg = COLORS.lightgrey
                 elif self.cursor.equals(i, j):
                     bg = COLORS.red
                     cell = S
                 elif (i+j) % 2:
-                    bg = COLORS.n4
+                    bg = COLORS.purple
                 else:
                     bg = COLORS.green
                 ret += "%s %s %s" % (bg, cell, COLORS.reset)
@@ -165,6 +164,9 @@ class State(object):
         return ret
 
     def all_valid_placements(self):
+        """
+        Returns whether the current_player can place a tile anywhere
+        """
         ret = []
         for y in range(8):
             for x in range(8):
@@ -173,13 +175,15 @@ class State(object):
         return ret
 
     def is_valid_placement(self, x, y):
+        """
+        Returns whether the current_player can place a tile there
+        """
         if self.board[y][x] != E:
             return False
 
-        for dy, dx in ((-1, 0), (1, 0), (0, 1), (0, -1)):
-            if 0 <= y + dy < 8 and 0 <= x + dx < 8 and \
-               self.board[y+dy][x+dx] == self.other_player:
-                return True
+        if self.get_swaps(x, y, self.cur_player):
+            return True
+
         return False
 
 
@@ -209,12 +213,21 @@ class State(object):
         return turn_num, x, y, swap_count
 
     def end_turn(self):
+        """
+        End the turn by setting the state to the opposite player
+        """
         self.cur_player = self.other_player
         self.turn_num += 1
-        if not self.all_valid_placements():
-            raise GameOver()
 
     def get_swaps(self, x, y, color):
+        """
+        Get everything that would swap if we placed at x, y.
+        Returns a list of tiles that would swap
+        :param int x:
+        :param int y:
+        :param str color:
+        :rtype: list<(int, int)>
+        """
         return (
             self._get_swaps_for_line(reversed(range(x)), [y for _ in range(x)], color) +
             self._get_swaps_for_line(range(x+1, 8), [y for _ in range(x+1, 8)], color) +
@@ -226,6 +239,7 @@ class State(object):
         Given an x and a y range (one will always be repeating) return tiles to swap
         :param list<int> x_range_to_check:
         :param list<int> y_range_to_check:
+        :param str color:
         :returns: the tiles that can be swapped
         :rtype: list<(int, int)>
         """
@@ -252,7 +266,9 @@ class State(object):
 
     def _set(self, x, y, color):
         """
-        TODO
+        :param int x:
+        :param int y:
+        :param str color:
         """
         self.board[y][x] = color
 
@@ -278,10 +294,10 @@ def draw(state):
     display += " See the README.md for more info"
     print(display)
 
+
 def handle_game_over(state):
     """
     Triggered by a GameOverExceptions ount up the tiles
-    TODO
     :param State state:
     """
     r_count = 0
@@ -311,6 +327,12 @@ def handle_human_turn(state):
     :param State state:
     :rtype: int turn_num, int x, int y, int swap_count
     """
+    draw(state)
+
+    if not state.all_valid_placements():
+        state.end_turn()
+        return state.turn_num, -1, -1, 0
+
     while True:
         draw(state)
         ch = getch()
@@ -330,13 +352,13 @@ def handle_human_turn(state):
             except SpotNotEmpty:
                 continue
 
+
 def min_step(state, depth_remaining):
     """
     Computer AI: minimax algorithm
     Given the current state, find the opponents best possible move by checking how many
     tiles that move would flip and how many tiles the you would flip in your
     best move.
-    TODO: don't we need to -1 the number of swaps?
     :param State state:
     :param int depth_remaining:
     :rtype: (int aggregate_flips, int x, int y) for the most aggregate flips
@@ -377,7 +399,18 @@ def max_step(state, depth_remaining):
     return max(possible_moves)
 
 
-def handle_computer_turn(state):
+def handle_computer_turn(state, depth=3):
+    """
+    Computer AI: minimax algorithm
+    Find the state that leads to the highest computer score over depth turns
+    :param State state:
+    :rtype: (int, int, int, int)
+    """
     draw(state)
-    _, x, y = max_step(state, 3)
+
+    if not state.all_valid_placements():
+        state.end_turn()
+        return state.turn_num, -1, -1, 0
+
+    _, x, y = max_step(state, depth)
     return state.select(x, y)
