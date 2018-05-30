@@ -12,10 +12,10 @@ This tutorial will take you through the process for integrating app_intelligence
 
 ### Table of contents
  * [Setup](#setup)
- * [Integration](#steps-to-integrate-app-intelligence)
+ * [Integration](#integration)
  * [Final Code](#final-code)
 
-### Setup
+## Setup
 
 #### In terminal A
 
@@ -37,7 +37,7 @@ This tutorial will take you through the process for integrating app_intelligence
     cd reversi
     ./reversi.py
 
-### Steps to integrate App Intelligence
+## Integration
 
      * [Step 1: Write an analytic](#step-1-write-an-analytic)
      * [Step 2: Generate analytic code](#step-2-generate-analytic-code)
@@ -98,4 +98,4 @@ This is a a single JSON file in either the user_analytics or the sdlc_analytics 
     FROM [workiva-analytics-dev:sdlc_analytics.learning_reversi_game_turn_v1]
     WHERE game_hash = "YOUR_HASH"`
 
-### Final code
+## Final code
