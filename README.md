@@ -13,11 +13,6 @@ This tutorial will take you through the process for integrating app_intelligence
 ### Table of contents
  * [Setup](#setup)
  * [Integration](#steps-to-integrate-app-intelligence)
-     * [Step 1: Write an analytic](#step-1)
-     * [Step 2: Generate analytic code](#step-2)
-     * [Step 3: Add AnalyticsReporter](#step-3)
-     * [Step 4: Insert sender code](#step-4)
-     * [Step 5: Run and view results in BigQuery](#step-5)
  * [Final Code](#final-code)
 
 ### Setup
@@ -44,11 +39,11 @@ This tutorial will take you through the process for integrating app_intelligence
 
 ### Steps to integrate App Intelligence
 
-1. Write an analytic
-2. Generate analytic code
-3. Setup our reporter
-4. Insert sender code
-5. Run and see results in BigQuery
+     * [Step 1: Write an analytic](#step-1-write-an-analytic)
+     * [Step 2: Generate analytic code](#step-2-generate-analytic-code)
+     * [Step 3: Add AnalyticsReporter](#step-3-add-analyticsreporter)
+     * [Step 4: Insert sender code](#step-4-insert-sender-code)
+     * [Step 5: Run and view results in BigQuery](#step-5-run-and-view-results-in-bigquery)
 
 ### Step 1: Write an analytic
 
