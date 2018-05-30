@@ -6,7 +6,7 @@ A tutorial of App Intelligence - Lunch and learn series
 
 Presentation here: https://docs.google.com/presentation/d/1SGaX-NAN6LPYKlxGdZrsihnuYbRzCCqBuPCU2P3cyfA
 
-<img src="images/screenshot.png" width="500px" />
+<img src="images/screenshot.png" width="700px" />
 
 This tutorial will take you through the process for integrating app_intelligence in a python implementation of reversi. By the end, you'll have integrated a working analytics reporter into the reversi game which tracks the moves taken by yourself and the computer. You will then be able to track those moves in BigQuery.
 
@@ -48,7 +48,7 @@ This tutorial will take you through the process for integrating app_intelligence
 
 This is a a single JSON file in either the [user_analytics](https://github.com/Workiva/user_analytics) or the [sdlc_analytics](https://github.com/Workiva/sdlc_analytics) repo (In this case, sdlc_analytics). The easiest way to create a new analytic is to copy and modify an existing analytic. Once done, create a PR and ping us on "ANSERS Public" in Hipchat. For this tutorial, we will be using this analytic: https://github.com/Workiva/sdlc_analytics/blob/master/analytics/learning/learning_reversi-game-turn_v1.json
 
-<img src="images/step_1.png" width="500px" />
+<img src="images/step_1.png" width="700px" />
 
 ### Step 2: Generate analytic code
 
@@ -56,7 +56,7 @@ This is a a single JSON file in either the [user_analytics](https://github.com/W
 2. Open gen/python/analytics/learning_v1.py
 3. Copy ReversiGameTurn to the top of reversi.py
 
-<img src="images/step_2.png" width="500px" />
+<img src="images/step_2.png" width="700px" />
 
 
 ### Step 3: Add AnalyticsReporter
@@ -66,7 +66,7 @@ At the top of reversi.py, add
     DEV = analytics.Hosts.SDLC_DEV
     reporter = analytics.AnalyticsReporter(DEV)
 
-<img src="images/step_3.png" width="500px" />
+<img src="images/step_3.png" width="700px" />
 
 
 ### Step 4: Insert sender code
@@ -99,7 +99,7 @@ At the top of reversi.py, add
         value=1,
         ))
 
-<img src="images/step_4.png" width="500px" />
+<img src="images/step_4.png" width="700px" />
 
 ### Step 5: Run and view results in BigQuery
 
@@ -112,7 +112,7 @@ At the top of reversi.py, add
     FROM [workiva-analytics-dev:sdlc_analytics.learning_reversi_game_turn_v1]
     WHERE game_hash = "YOUR_HASH"
 
-<img src="images/step_5.png" width="500px" />
+<img src="images/step_5.png" width="700px" />
 
 ## Final code
 
