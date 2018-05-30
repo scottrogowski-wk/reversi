@@ -10,7 +10,6 @@ Presentation here: https://docs.google.com/presentation/d/1SGaX-NAN6LPYKlxGdZrsi
 
 This tutorial will take you through the process for integrating app_intelligence in a python implementation of reversi. By the end, you'll have integrated a working analytics reporter into the reversi game which tracks the moves taken by yourself and the computer. You will then be able to track those moves in BigQuery.
 
-### Table of contents
  * [Setup](#setup)
  * [Integration](#integration)
  * [Final Code](#final-code)
@@ -39,11 +38,11 @@ This tutorial will take you through the process for integrating app_intelligence
 
 ## Integration
 
-     * [Step 1: Write an analytic](#step-1-write-an-analytic)
-     * [Step 2: Generate analytic code](#step-2-generate-analytic-code)
-     * [Step 3: Add AnalyticsReporter](#step-3-add-analyticsreporter)
-     * [Step 4: Insert sender code](#step-4-insert-sender-code)
-     * [Step 5: Run and view results in BigQuery](#step-5-run-and-view-results-in-bigquery)
+ * [Step 1: Write an analytic](#step-1-write-an-analytic)
+ * [Step 2: Generate analytic code](#step-2-generate-analytic-code)
+ * [Step 3: Add AnalyticsReporter](#step-3-add-analyticsreporter)
+ * [Step 4: Insert sender code](#step-4-insert-sender-code)
+ * [Step 5: Run and view results in BigQuery](#step-5-run-and-view-results-in-bigquery)
 
 ### Step 1: Write an analytic
 
