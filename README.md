@@ -48,17 +48,25 @@ This tutorial will take you through the process for integrating app_intelligence
 
 This is a a single JSON file in either the user_analytics or the sdlc_analytics repo (In this case, sdlc_analytics). The easiest way to create a new analytic is to copy and modify an existing analytic. Once done, create a PR and ping us on "ANSERS Public" in Hipchat. For this tutorial, we will be using this analytic: https://github.com/Workiva/sdlc_analytics/blob/master/analytics/learning/learning_reversi-game-turn_v1.json
 
+<img src="step_1.png" height="400px" />
+
 ### Step 2: Generate analytic code
 
 1. In sdlc_analytics terminal `make gen-py`
 2. Open gen/python/analytics/learning_v1.py
 3. Copy ReversiGameTurn to the top of reversi.py
 
+<img src="step_2.png" height="400px" />
+
+
 ### Step 3: Add AnalyticsReporter
 
     # At the top of reversi.py, add
     DEV = analytics.Hosts.SDLC_DEV
     reporter = analytics.AnalyticsReporter(DEV)
+
+<img src="step_3.png" height="400px" />
+
 
 ### Step 4: Insert sender code
 
@@ -68,7 +76,7 @@ This is a a single JSON file in either the user_analytics or the sdlc_analytics 
         turn_num=turn_num,
         x=x,
         y=y,
-        swap_count=swap_count,
+        swap_count=human_swap_count,
 
         game_hash=game_hash,
         player="human",
@@ -80,11 +88,13 @@ This is a a single JSON file in either the user_analytics or the sdlc_analytics 
         turn_num=turn_num,
         x=x,
         y=y,
-        swap_count=swap_count,
+        swap_count=comp_swap_count,
 
         game_hash=game_hash,
         player="computer",
         ))
+
+<img src="step_4.png" height="400px" />
 
 ### Step 5: Run and view results in BigQuery
 
@@ -96,5 +106,7 @@ This is a a single JSON file in either the user_analytics or the sdlc_analytics 
     SELECT *
     FROM [workiva-analytics-dev:sdlc_analytics.learning_reversi_game_turn_v1]
     WHERE game_hash = "YOUR_HASH"`
+
+<img src="step_5.png" height="400px" />
 
 ## Final code
